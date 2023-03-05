@@ -1,4 +1,12 @@
-<?php declare(strict_types=1);
+<?php
+
+/**
+ *
+ *
+ *
+ */
+
+declare(strict_types=1);
 
 namespace Curl;
 
@@ -6,49 +14,52 @@ use Curl\ArrayUtil;
 use Curl\BaseCurl;
 use Curl\Url;
 
-class MultiCurl extends BaseCurl
-{
-    public $baseUrl = null;
-    public $multiCurl = null;
+/**
+ *
+ */
+class MultiCurl extends BaseCurl {
 
-    public $startTime = null;
-    public $stopTime = null;
+    public $baseUrl;
+    public $multiCurl;
 
-    private $queuedCurls = [];
-    private $activeCurls = [];
-    private $isStarted = false;
-    private $currentStartTime = null;
-    private $currentRequestCount = 0;
-    private $concurrency = 25;
-    private $nextCurlId = 0;
+    public $startTime;
+    public $stopTime;
+
+    private $queuedCurls               = [];
+    private $activeCurls               = [];
+    private $isStarted                 = false;
+    private $currentStartTime;
+    private $currentRequestCount       = 0;
+    private $concurrency               = 25;
+    private $nextCurlId                = 0;
     private $preferRequestTimeAccuracy = false;
 
     private $rateLimit = null;
     private $rateLimitEnabled = false;
     private $rateLimitReached = false;
-    private $maxRequests = null;
-    private $interval = null;
-    private $intervalSeconds = null;
-    private $unit = null;
+    private $maxRequests;
+    private $interval         = null;
+    private $intervalSeconds;
+    private $unit             = null;
 
     private $retry = null;
 
-    private $cookies = [];
-    private $headers = [];
+    private $cookies                 = [];
+    private $headers;
     private $instanceSpecificOptions = [];
-    private $proxies = null;
+    private $proxies;
 
-    private $jsonDecoder = null;
-    private $xmlDecoder = null;
+    private $jsonDecoder;
+    private $xmlDecoder;
 
     /**
      * Construct
      *
      * @access public
+     *
      * @param  $base_url
      */
-    public function __construct($base_url = null)
-    {
+    public function __construct($base_url = null) {
         $this->multiCurl = curl_multi_init();
         $this->headers = new CaseInsensitiveArray();
 
@@ -61,14 +72,14 @@ class MultiCurl extends BaseCurl
      * Add Delete
      *
      * @access public
+     *
      * @param  $url
      * @param  $query_parameters
      * @param  $data
      *
      * @return object
      */
-    public function addDelete($url, $query_parameters = [], $data = [])
-    {
+    public function addDelete($url, $query_parameters = [], $data = []) {
         if (is_array($url)) {
             $data = $query_parameters;
             $query_parameters = $url;
@@ -81,6 +92,7 @@ class MultiCurl extends BaseCurl
         $curl->setUrl($url, $query_parameters);
         $curl->setOpt(CURLOPT_CUSTOMREQUEST, 'DELETE');
         $curl->setOpt(CURLOPT_POSTFIELDS, $curl->buildPostData($data));
+
         return $curl;
     }
 
@@ -88,13 +100,13 @@ class MultiCurl extends BaseCurl
      * Add Download
      *
      * @access public
+     *
      * @param  $url
      * @param  $mixed_filename
      *
      * @return object
      */
-    public function addDownload($url, $mixed_filename)
-    {
+    public function addDownload($url, $mixed_filename) {
         $curl = new Curl($this->baseUrl, $this->options);
         $this->queueHandle($curl);
         $this->setUrl($url);
@@ -123,7 +135,7 @@ class MultiCurl extends BaseCurl
                 $curl->fileHandle = fopen($download_filename, 'ab');
 
                 // Move the downloaded temporary file to the destination save path.
-                $curl->downloadCompleteCallback = function ($instance, $fh) use ($download_filename, $filename) {
+                $curl->downloadCompleteCallback = static function($instance, $fh) use ($download_filename, $filename) {
                     // Close the open file handle before renaming the file.
                     if (is_resource($fh)) {
                         fclose($fh);
@@ -133,7 +145,7 @@ class MultiCurl extends BaseCurl
                 };
             } else {
                 $curl->fileHandle = fopen('php://temp', 'wb');
-                $curl->downloadCompleteCallback = function ($instance, $fh) use ($filename) {
+                $curl->downloadCompleteCallback = static function($instance, $fh) use ($filename) {
                     file_put_contents($filename, stream_get_contents($fh));
                 };
             }
@@ -142,6 +154,7 @@ class MultiCurl extends BaseCurl
         $curl->setFile($curl->fileHandle);
         $curl->setOpt(CURLOPT_CUSTOMREQUEST, 'GET');
         $curl->setOpt(CURLOPT_HTTPGET, true);
+
         return $curl;
     }
 
@@ -149,13 +162,13 @@ class MultiCurl extends BaseCurl
      * Add Get
      *
      * @access public
+     *
      * @param  $url
      * @param  $data
      *
      * @return object
      */
-    public function addGet($url, $data = [])
-    {
+    public function addGet($url, $data = []) {
         if (is_array($url)) {
             $data = $url;
             $url = $this->baseUrl;
@@ -167,6 +180,7 @@ class MultiCurl extends BaseCurl
         $curl->setUrl($url, $data);
         $curl->setOpt(CURLOPT_CUSTOMREQUEST, 'GET');
         $curl->setOpt(CURLOPT_HTTPGET, true);
+
         return $curl;
     }
 
@@ -174,13 +188,13 @@ class MultiCurl extends BaseCurl
      * Add Head
      *
      * @access public
+     *
      * @param  $url
      * @param  $data
      *
      * @return object
      */
-    public function addHead($url, $data = [])
-    {
+    public function addHead($url, $data = []) {
         if (is_array($url)) {
             $data = $url;
             $url = $this->baseUrl;
@@ -192,6 +206,7 @@ class MultiCurl extends BaseCurl
         $curl->setUrl($url, $data);
         $curl->setOpt(CURLOPT_CUSTOMREQUEST, 'HEAD');
         $curl->setOpt(CURLOPT_NOBODY, true);
+
         return $curl;
     }
 
@@ -199,13 +214,13 @@ class MultiCurl extends BaseCurl
      * Add Options
      *
      * @access public
+     *
      * @param  $url
      * @param  $data
      *
      * @return object
      */
-    public function addOptions($url, $data = [])
-    {
+    public function addOptions($url, $data = []) {
         if (is_array($url)) {
             $data = $url;
             $url = $this->baseUrl;
@@ -217,6 +232,7 @@ class MultiCurl extends BaseCurl
         $curl->setUrl($url, $data);
         $curl->removeHeader('Content-Length');
         $curl->setOpt(CURLOPT_CUSTOMREQUEST, 'OPTIONS');
+
         return $curl;
     }
 
@@ -224,13 +240,13 @@ class MultiCurl extends BaseCurl
      * Add Patch
      *
      * @access public
+     *
      * @param  $url
      * @param  $data
      *
      * @return object
      */
-    public function addPatch($url, $data = [])
-    {
+    public function addPatch($url, $data = []) {
         if (is_array($url)) {
             $data = $url;
             $url = $this->baseUrl;
@@ -247,6 +263,7 @@ class MultiCurl extends BaseCurl
         $curl->setUrl($url);
         $curl->setOpt(CURLOPT_CUSTOMREQUEST, 'PATCH');
         $curl->setOpt(CURLOPT_POSTFIELDS, $curl->buildPostData($data));
+
         return $curl;
     }
 
@@ -254,6 +271,7 @@ class MultiCurl extends BaseCurl
      * Add Post
      *
      * @access public
+     *
      * @param  $url
      * @param  $data
      * @param  $follow_303_with_post
@@ -262,10 +280,9 @@ class MultiCurl extends BaseCurl
      *
      * @return object
      */
-    public function addPost($url, $data = '', $follow_303_with_post = false)
-    {
+    public function addPost($url, $data = '', $follow_303_with_post = false) {
         if (is_array($url)) {
-            $follow_303_with_post = (bool)$data;
+            $follow_303_with_post = (bool) $data;
             $data = $url;
             $url = $this->baseUrl;
         }
@@ -290,6 +307,7 @@ class MultiCurl extends BaseCurl
 
         $curl->setOpt(CURLOPT_POST, true);
         $curl->setOpt(CURLOPT_POSTFIELDS, $curl->buildPostData($data));
+
         return $curl;
     }
 
@@ -297,13 +315,13 @@ class MultiCurl extends BaseCurl
      * Add Put
      *
      * @access public
+     *
      * @param  $url
      * @param  $data
      *
      * @return object
      */
-    public function addPut($url, $data = [])
-    {
+    public function addPut($url, $data = []) {
         if (is_array($url)) {
             $data = $url;
             $url = $this->baseUrl;
@@ -319,6 +337,7 @@ class MultiCurl extends BaseCurl
             $curl->setHeader('Content-Length', strlen($put_data));
         }
         $curl->setOpt(CURLOPT_POSTFIELDS, $put_data);
+
         return $curl;
     }
 
@@ -326,13 +345,13 @@ class MultiCurl extends BaseCurl
      * Add Search
      *
      * @access public
+     *
      * @param  $url
      * @param  $data
      *
      * @return object
      */
-    public function addSearch($url, $data = [])
-    {
+    public function addSearch($url, $data = []) {
         if (is_array($url)) {
             $data = $url;
             $url = $this->baseUrl;
@@ -348,6 +367,7 @@ class MultiCurl extends BaseCurl
             $curl->setHeader('Content-Length', strlen($put_data));
         }
         $curl->setOpt(CURLOPT_POSTFIELDS, $put_data);
+
         return $curl;
     }
 
@@ -357,13 +377,14 @@ class MultiCurl extends BaseCurl
      * Add a Curl instance to the handle queue.
      *
      * @access public
+     *
      * @param  $curl
      *
      * @return object
      */
-    public function addCurl(Curl $curl)
-    {
+    public function addCurl(Curl $curl) {
         $this->queueHandle($curl);
+
         return $curl;
     }
 
@@ -372,8 +393,7 @@ class MultiCurl extends BaseCurl
      *
      * @access public
      */
-    public function close()
-    {
+    public function close() {
         foreach ($this->queuedCurls as $curl) {
             $curl->close();
         }
@@ -388,10 +408,10 @@ class MultiCurl extends BaseCurl
      * Set Concurrency
      *
      * @access public
+     *
      * @param  $concurrency
      */
-    public function setConcurrency($concurrency)
-    {
+    public function setConcurrency($concurrency) {
         $this->concurrency = $concurrency;
     }
 
@@ -399,11 +419,11 @@ class MultiCurl extends BaseCurl
      * Set Cookie
      *
      * @access public
+     *
      * @param  $key
      * @param  $value
      */
-    public function setCookie($key, $value)
-    {
+    public function setCookie($key, $value) {
         $this->cookies[$key] = $value;
     }
 
@@ -411,10 +431,10 @@ class MultiCurl extends BaseCurl
      * Set Cookies
      *
      * @access public
+     *
      * @param  $cookies
      */
-    public function setCookies($cookies)
-    {
+    public function setCookies($cookies) {
         foreach ($cookies as $key => $value) {
             $this->cookies[$key] = $value;
         }
@@ -424,10 +444,10 @@ class MultiCurl extends BaseCurl
      * Set Cookie String
      *
      * @access public
+     *
      * @param  $string
      */
-    public function setCookieString($string)
-    {
+    public function setCookieString($string) {
         $this->setOpt(CURLOPT_COOKIE, $string);
     }
 
@@ -435,10 +455,10 @@ class MultiCurl extends BaseCurl
      * Set Cookie File
      *
      * @access public
+     *
      * @param  $cookie_file
      */
-    public function setCookieFile($cookie_file)
-    {
+    public function setCookieFile($cookie_file) {
         $this->setOpt(CURLOPT_COOKIEFILE, $cookie_file);
     }
 
@@ -446,10 +466,10 @@ class MultiCurl extends BaseCurl
      * Set Cookie Jar
      *
      * @access public
+     *
      * @param  $cookie_jar
      */
-    public function setCookieJar($cookie_jar)
-    {
+    public function setCookieJar($cookie_jar) {
         $this->setOpt(CURLOPT_COOKIEJAR, $cookie_jar);
     }
 
@@ -459,11 +479,11 @@ class MultiCurl extends BaseCurl
      * Add extra header to include in the request.
      *
      * @access public
+     *
      * @param  $key
      * @param  $value
      */
-    public function setHeader($key, $value)
-    {
+    public function setHeader($key, $value) {
         $this->headers[$key] = $value;
         $this->updateHeaders();
     }
@@ -474,10 +494,10 @@ class MultiCurl extends BaseCurl
      * Add extra headers to include in the request.
      *
      * @access public
+     *
      * @param  $headers
      */
-    public function setHeaders($headers)
-    {
+    public function setHeaders($headers) {
         if (ArrayUtil::isArrayAssoc($headers)) {
             foreach ($headers as $key => $value) {
                 $key = trim($key);
@@ -500,13 +520,13 @@ class MultiCurl extends BaseCurl
      * Set JSON Decoder
      *
      * @access public
+     *
      * @param  $mixed boolean|callable
      */
-    public function setJsonDecoder($mixed)
-    {
+    public function setJsonDecoder($mixed) {
         if ($mixed === false) {
             $this->jsonDecoder = false;
-        } elseif (is_callable($mixed)) {
+        } else if (is_callable($mixed)) {
             $this->jsonDecoder = $mixed;
         }
     }
@@ -515,13 +535,13 @@ class MultiCurl extends BaseCurl
      * Set XML Decoder
      *
      * @access public
+     *
      * @param  $mixed boolean|callable
      */
-    public function setXmlDecoder($mixed)
-    {
+    public function setXmlDecoder($mixed) {
         if ($mixed === false) {
             $this->xmlDecoder = false;
-        } elseif (is_callable($mixed)) {
+        } else if (is_callable($mixed)) {
             $this->xmlDecoder = $mixed;
         }
     }
@@ -533,11 +553,11 @@ class MultiCurl extends BaseCurl
      * used for the request.
      *
      * @access public
+     *
      * @param  $proxies array - A list of HTTP proxies to tunnel requests
-     *     through. May include port number.
+     *                  through. May include port number.
      */
-    public function setProxies($proxies)
-    {
+    public function setProxies($proxies) {
         $this->proxies = $proxies;
     }
 
@@ -545,11 +565,11 @@ class MultiCurl extends BaseCurl
      * Set Opt
      *
      * @access public
+     *
      * @param  $option
      * @param  $value
      */
-    public function setOpt($option, $value)
-    {
+    public function setOpt($option, $value) {
         $this->options[$option] = $value;
 
         // Make changing the url an instance-specific option. Set the value of
@@ -569,10 +589,10 @@ class MultiCurl extends BaseCurl
      * Set Opts
      *
      * @access public
+     *
      * @param  $options
      */
-    public function setOpts($options)
-    {
+    public function setOpts($options) {
         foreach ($options as $option => $value) {
             $this->setOpt($option, $value);
         }
@@ -582,11 +602,12 @@ class MultiCurl extends BaseCurl
      * Set Rate Limit
      *
      * @access public
+     *
      * @param  $rate_limit string (e.g. "60/1m").
+     *
      * @throws \UnexpectedValueException
      */
-    public function setRateLimit($rate_limit)
-    {
+    public function setRateLimit($rate_limit) {
         $rate_limit_pattern =
             '/' .       // delimiter
             '^' .       // assert start
@@ -605,20 +626,20 @@ class MultiCurl extends BaseCurl
             );
         }
 
-        $max_requests = (int)$matches['1'];
+        $max_requests = (int) $matches['1'];
         if ($matches['2'] === '') {
             $interval = 1;
         } else {
-            $interval = (int)$matches['2'];
+            $interval = (int) $matches['2'];
         }
         $unit = strtolower($matches['3']);
 
         // Convert interval to seconds based on unit.
         if ($unit === 's') {
             $interval_seconds = $interval * 1;
-        } elseif ($unit === 'm') {
+        } else if ($unit === 'm') {
             $interval_seconds = $interval * 60;
-        } elseif ($unit === 'h') {
+        } else if ($unit === 'h') {
             $interval_seconds = $interval * 3600;
         }
 
@@ -642,10 +663,10 @@ class MultiCurl extends BaseCurl
      * function returns a value which evaluates to false.
      *
      * @access public
+     *
      * @param  $mixed
      */
-    public function setRetry($mixed)
-    {
+    public function setRetry($mixed) {
         $this->retry = $mixed;
     }
 
@@ -653,17 +674,17 @@ class MultiCurl extends BaseCurl
      * Set Url
      *
      * @access public
+     *
      * @param  $url
      * @param  $mixed_data
      */
-    public function setUrl($url, $mixed_data = '')
-    {
+    public function setUrl($url, $mixed_data = '') {
         $built_url = Url::buildUrl($url, $mixed_data);
 
         if ($this->baseUrl === null) {
-            $this->baseUrl = (string)new Url($built_url);
+            $this->baseUrl = (string) new Url($built_url);
         } else {
-            $this->baseUrl = (string)new Url($this->baseUrl, $built_url);
+            $this->baseUrl = (string) new Url($this->baseUrl, $built_url);
         }
 
         $this->setOpt(CURLOPT_URL, $this->baseUrl);
@@ -675,8 +696,7 @@ class MultiCurl extends BaseCurl
      * @access public
      * @throws \ErrorException
      */
-    public function start()
-    {
+    public function start() {
         if ($this->isStarted) {
             return;
         }
@@ -785,8 +805,7 @@ class MultiCurl extends BaseCurl
      *
      * @access public
      */
-    public function stop()
-    {
+    public function stop() {
         // Remove any queued curl requests.
         while (count($this->queuedCurls)) {
             $curl = array_pop($this->queuedCurls);
@@ -811,10 +830,10 @@ class MultiCurl extends BaseCurl
      * Remove extra header previously set using Curl::setHeader().
      *
      * @access public
+     *
      * @param  $key
      */
-    public function unsetHeader($key)
-    {
+    public function unsetHeader($key) {
         unset($this->headers[$key]);
     }
 
@@ -823,8 +842,7 @@ class MultiCurl extends BaseCurl
      *
      * @access public
      */
-    public function setRequestTimeAccuracy()
-    {
+    public function setRequestTimeAccuracy() {
         $this->preferRequestTimeAccuracy = true;
     }
 
@@ -833,8 +851,7 @@ class MultiCurl extends BaseCurl
      *
      * @access public
      */
-    public function __destruct()
-    {
+    public function __destruct() {
         $this->close();
     }
 
@@ -843,8 +860,7 @@ class MultiCurl extends BaseCurl
      *
      * @access private
      */
-    private function updateHeaders()
-    {
+    private function updateHeaders() {
         foreach ($this->queuedCurls as $curl) {
             $curl->setHeaders($this->headers);
         }
@@ -854,10 +870,10 @@ class MultiCurl extends BaseCurl
      * Queue Handle
      *
      * @access private
+     *
      * @param  $curl
      */
-    private function queueHandle($curl)
-    {
+    private function queueHandle($curl) {
         // Use sequential ids to allow for ordered post processing.
         $curl->id = $this->nextCurlId++;
         $curl->childOfMultiCurl = true;
@@ -870,11 +886,12 @@ class MultiCurl extends BaseCurl
      * Init Handle
      *
      * @access private
+     *
      * @param  $curl
+     *
      * @throws \ErrorException
      */
-    private function initHandle()
-    {
+    private function initHandle() {
         $curl = array_shift($this->queuedCurls);
         if ($curl === null) {
             return;
@@ -937,8 +954,7 @@ class MultiCurl extends BaseCurl
      *
      * @access private
      */
-    private function hasRequestQuota()
-    {
+    private function hasRequestQuota() {
         // Calculate if there's request quota since ratelimiting is enabled.
         if ($this->rateLimitEnabled) {
             // Determine if the limit of requests per interval has been reached.
@@ -947,8 +963,9 @@ class MultiCurl extends BaseCurl
                 $elapsed_seconds = $micro_time - $this->currentStartTime;
                 if ($elapsed_seconds <= $this->intervalSeconds) {
                     $this->rateLimitReached = true;
+
                     return false;
-                } elseif ($this->rateLimitReached) {
+                } else if ($this->rateLimitReached) {
                     $this->rateLimitReached = false;
                     $this->currentStartTime = $micro_time;
                     $this->currentRequestCount = 0;
@@ -968,8 +985,7 @@ class MultiCurl extends BaseCurl
      *
      * @access private
      */
-    private function waitUntilRequestQuotaAvailable()
-    {
+    private function waitUntilRequestQuotaAvailable() {
         $sleep_until = $this->currentStartTime + $this->intervalSeconds;
         $sleep_seconds = $sleep_until - microtime(true);
 
@@ -987,4 +1003,5 @@ class MultiCurl extends BaseCurl
 
         $this->currentRequestCount = 0;
     }
+
 }

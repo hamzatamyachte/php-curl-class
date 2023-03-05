@@ -1,38 +1,40 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Curl;
 
-use Curl\CaseInsensitiveArray;
+/**
+ * Class array Util.
+ */
+class ArrayUtil {
 
-class ArrayUtil
-{
     /**
-     * Is Array Assoc
+     * Is associative array.
      *
      * @access public
+     *
      * @param  $array
      *
      * @return boolean
      */
-    public static function isArrayAssoc($array)
-    {
+    public static function isArrayAssoc($array) {
         return (
             $array instanceof CaseInsensitiveArray ||
-            (bool)count(array_filter(array_keys($array), 'is_string'))
+            count(array_filter(array_keys($array), 'is_string'))
         );
     }
 
     /**
      * Is Array Assoc
      *
-     * @deprecated Use ArrayUtil::isArrayAssoc().
-     * @access public
      * @param  $array
      *
      * @return boolean
+     * @deprecated Use ArrayUtil::isArrayAssoc().
+     * @access     public
      */
-    public static function is_array_assoc($array)
-    {
+    public static function is_array_assoc($array) {
         return static::isArrayAssoc($array);
     }
 
@@ -40,30 +42,29 @@ class ArrayUtil
      * Is Array Multidim
      *
      * @access public
+     *
      * @param  $array
      *
      * @return boolean
      */
-    public static function isArrayMultidim($array)
-    {
+    public static function isArrayMultidim($array) {
         if (!is_array($array)) {
             return false;
         }
 
-        return (bool)count(array_filter($array, 'is_array'));
+        return (bool) count(array_filter($array, 'is_array'));
     }
 
     /**
      * Is Array Multidim
      *
-     * @deprecated Use ArrayUtil::isArrayMultidim().
-     * @access public
      * @param  $array
      *
      * @return boolean
+     * @deprecated Use ArrayUtil::isArrayMultidim().
+     * @access     public
      */
-    public static function is_array_multidim($array)
-    {
+    public static function is_array_multidim($array) {
         return static::isArrayMultidim($array);
     }
 
@@ -71,13 +72,13 @@ class ArrayUtil
      * Array Flatten Multidim
      *
      * @access public
+     *
      * @param  $array
      * @param  $prefix
      *
      * @return array
      */
-    public static function arrayFlattenMultidim($array, $prefix = false)
-    {
+    public static function arrayFlattenMultidim($array, $prefix = false) {
         $return = [];
         if (is_array($array) || is_object($array)) {
             if (empty($array)) {
@@ -93,9 +94,13 @@ class ArrayUtil
                     } else {
                         if ($value instanceof \CURLFile) {
                             $return[$key] = $value;
-                        } elseif ($value instanceof \CURLStringFile) {
+                        } else if ($value instanceof \CURLStringFile) {
                             $return[$key] = $value;
                         } else {
+
+
+
+
                             $return = array_merge(
                                 $return,
                                 self::arrayFlattenMultidim(
@@ -103,28 +108,33 @@ class ArrayUtil
                                     $prefix ? $prefix . '[' . $key . ']' : $key
                                 )
                             );
+
+
+
+
+
                         }
                     }
                 }
             }
-        } elseif ($array === null) {
+        } else if ($array === null) {
             $return[$prefix] = $array;
         }
+
         return $return;
     }
 
     /**
      * Array Flatten Multidim
      *
-     * @deprecated Use ArrayUtil::arrayFlattenMultidim().
-     * @access public
      * @param  $array
      * @param  $prefix
      *
      * @return array
+     * @deprecated Use ArrayUtil::arrayFlattenMultidim().
+     * @access     public
      */
-    public static function array_flatten_multidim($array, $prefix = false)
-    {
+    public static function array_flatten_multidim($array, $prefix = false) {
         return static::arrayFlattenMultidim($array, $prefix);
     }
 
@@ -132,12 +142,12 @@ class ArrayUtil
      * Array Random
      *
      * @access public
+     *
      * @param  $array
      *
      * @return mixed
      */
-    public static function arrayRandom($array)
-    {
+    public static function arrayRandom($array) {
         return $array[static::arrayRandomIndex($array)];
     }
 
@@ -145,26 +155,26 @@ class ArrayUtil
      * Array Random Index
      *
      * @access public
+     *
      * @param  $array
      *
      * @return integer
      */
-    public static function arrayRandomIndex($array)
-    {
+    public static function arrayRandomIndex($array) {
         return mt_rand(0, count($array) - 1);
     }
 
     /**
      * Array Random
      *
-     * @deprecated Use ArrayUtil::arrayRandom().
-     * @access public
      * @param  $array
      *
      * @return mixed
+     * @deprecated Use ArrayUtil::arrayRandom().
+     * @access     public
      */
-    public static function array_random($array)
-    {
+    public static function array_random($array) {
         return static::arrayRandom($array);
     }
+
 }

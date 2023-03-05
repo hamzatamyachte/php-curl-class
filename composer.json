@@ -15,7 +15,8 @@
     ],
     "require": {
         "php": ">=7.0",
-        "ext-curl": "*"
+        "ext-curl": "*",
+        "ext-mbstring": "*"
     },
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "*",
@@ -27,7 +28,6 @@
         "vimeo/psalm": "*"
     },
     "suggest": {
-        "ext-mbstring": "*"
     },
     "autoload": {
         "psr-4": {
