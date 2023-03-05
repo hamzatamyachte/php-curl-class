@@ -163,7 +163,7 @@ abstract class BaseCurl {
 
     /**
      * Set cookies.
-     * 
+     *
      * @param $cookies
      *
      * @return mixed
@@ -212,8 +212,23 @@ abstract class BaseCurl {
         $this->setOpt(CURLOPT_FORBID_REUSE, $forbid_reuse);
     }
 
+    /**
+     * Set header.
+     *
+     * @param $key
+     * @param $value
+     *
+     * @return mixed
+     */
     abstract public function setHeader($key, $value);
 
+    /**
+     * Set headers.
+     *
+     * @param $headers
+     *
+     * @return mixed
+     */
     abstract public function setHeaders($headers);
 
     /**
@@ -230,6 +245,13 @@ abstract class BaseCurl {
         $this->setOpt(CURLOPT_INTERFACE, $interface);
     }
 
+    /**
+     * Set json decoder.
+     *
+     * @param $mixed
+     *
+     * @return mixed
+     */
     abstract public function setJsonDecoder($mixed);
 
     /**
@@ -241,12 +263,27 @@ abstract class BaseCurl {
         $this->setOpt(CURLOPT_MAXREDIRS, $maximum_redirects);
     }
 
+    /**
+     * Set option value.
+     *
+     * @param $option
+     * @param $value
+     *
+     * @return mixed
+     */
     abstract public function setOpt($option, $value);
 
+    /**
+     * Set options values.
+     *
+     * @param $options
+     *
+     * @return mixed
+     */
     abstract public function setOpts($options);
 
     /**
-     * Set Port
+     * Set Port.
      *
      * @access public
      *
@@ -257,7 +294,7 @@ abstract class BaseCurl {
     }
 
     /**
-     * Set Proxy
+     * Set Proxy.
      *
      * Set an HTTP proxy to tunnel requests through.
      *
@@ -350,10 +387,17 @@ abstract class BaseCurl {
         $this->setOpt(CURLOPT_REFERER, $referrer);
     }
 
+    /**
+     * Set a retry.
+     *
+     * @param $mixed
+     *
+     * @return mixed
+     */
     abstract public function setRetry($mixed);
 
     /**
-     * Set Timeout
+     * Set Timeout.
      *
      * @access public
      *
@@ -363,10 +407,18 @@ abstract class BaseCurl {
         $this->setOpt(CURLOPT_TIMEOUT, $seconds);
     }
 
+    /**
+     * Set URL.
+     *
+     * @param $url
+     * @param $mixed_data
+     *
+     * @return mixed
+     */
     abstract public function setUrl($url, $mixed_data = '');
 
     /**
-     * Set User Agent
+     * Set User Agent.
      *
      * @access public
      *
@@ -376,6 +428,13 @@ abstract class BaseCurl {
         $this->setOpt(CURLOPT_USERAGENT, $user_agent);
     }
 
+    /**
+     * Set XML decoder.
+     *
+     * @param $mixed
+     *
+     * @return mixed
+     */
     abstract public function setXmlDecoder($mixed);
 
     abstract public function stop();
@@ -391,10 +450,17 @@ abstract class BaseCurl {
         $this->successCallback = $callback;
     }
 
+    /**
+     * Unset header by key.
+     *
+     * @param $key
+     *
+     * @return mixed
+     */
     abstract public function unsetHeader($key);
 
     /**
-     * Unset Proxy
+     * Unset Proxy.
      *
      * Disable use of the proxy.
      *
