@@ -6,6 +6,8 @@ namespace Curl;
 
 /**
  * Class array Util.
+ *
+ * @package Curl
  */
 class ArrayUtil {
 

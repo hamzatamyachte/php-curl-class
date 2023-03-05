@@ -6,7 +6,9 @@ use Curl\ArrayUtil;
 use Curl\CaseInsensitiveArray;
 
 /**
+ * Class ArrayUtilTest.
  *
+ * @package Curl
  */
 class ArrayUtilTest extends \PHPUnit\Framework\TestCase
 {
