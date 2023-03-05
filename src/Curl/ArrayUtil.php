@@ -80,6 +80,7 @@ class ArrayUtil {
      */
     public static function arrayFlattenMultidim($array, $prefix = false) {
         $return = [];
+        $multidimArray = [];
         if (is_array($array) || is_object($array)) {
             if (empty($array)) {
                 $return[$prefix] = '';
@@ -91,31 +92,20 @@ class ArrayUtil {
                         } else {
                             $return[$key] = $value;
                         }
+                    } else if ($value instanceof \CURLFile) {
+                        $return[$key] = $value;
+                    } else if ($value instanceof \CURLStringFile) {
+                        $return[$key] = $value;
                     } else {
-                        if ($value instanceof \CURLFile) {
-                            $return[$key] = $value;
-                        } else if ($value instanceof \CURLStringFile) {
-                            $return[$key] = $value;
-                        } else {
 
-
-
-
-                            $return = array_merge(
-                                $return,
-                                self::arrayFlattenMultidim(
-                                    $value,
-                                    $prefix ? $prefix . '[' . $key . ']' : $key
-                                )
-                            );
-
-
-
-
-
-                        }
+                        $multidimArray[] = self::arrayFlattenMultidim(
+                            $value,
+                            $prefix ? $prefix . '[' . $key . ']' : $key
+                        );
                     }
                 }
+
+                $return = array_merge($return, ...$multidimArray);
             }
         } else if ($array === null) {
             $return[$prefix] = $array;
